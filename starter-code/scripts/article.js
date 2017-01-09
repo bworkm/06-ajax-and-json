@@ -17,11 +17,11 @@ function Article (opts) {
 Article.all = [];
 
 Article.prototype.toHtml = function() {
-  let template = Handlebars.compile($('#article-template').text());
+  let template = Handlebars.compile($('#article-template').text()); //eslint-disable-line
 
   this.daysAgo = parseInt((new Date() - new Date(this.publishedOn))/60/60/24/1000);
   this.publishStatus = this.publishedOn ? `published ${this.daysAgo} days ago` : '(draft)';
-  this.body = marked(this.body);
+  this.body = marked(this.body);  //eslint-disable-line
 
   return template(this);
 };
@@ -34,6 +34,7 @@ Article.prototype.toHtml = function() {
 // and use it to instantiate all the articles. This code is moved from elsewhere, and
 // encapsulated in a simply-named function for clarity.
 Article.loadAll = function(rawData) {
+  console.log(rawData);
   rawData.sort(function(a,b) {
     return (new Date(b.publishedOn)) - (new Date(a.publishedOn));
   });
@@ -50,7 +51,9 @@ Article.fetchAll = function() {
     // When rawData is already in localStorage,
     // we can load it with the .loadAll function above,
     // and then render the index page (using the proper method on the articleView object).
-    Article.loadAll(); //TODO: What do we pass in to loadAll()?
+    // console.log(localStorage.rawData,'Did exist!');
+    Article.loadAll(JSON.parse(localStorage.rawData)); //DONE: What do we pass in to loadAll()? An array!
+
     //TODO: What method do we call to render the index page?
   } else {
     // TODO: When we don't already have the rawData,
@@ -59,5 +62,13 @@ Article.fetchAll = function() {
     // then load all the data into Article.all with the .loadAll function above,
     // and then render the index page.
 
+    $.getJSON('../data/hackerIpsum.json')
+     .done(function(data) {
+       localStorage.setItem('rawData', JSON.stringify(data));
+       Article.loadAll(data);
+     })
+     .fail(function() {
+       console.log('failed');
+     });
   }
 }
